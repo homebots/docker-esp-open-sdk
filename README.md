@@ -1,234 +1,72 @@
-# the ESP8266
+# esbuild - esp8266 compiler on Docker
 
-From the homepage of the [vendor](https://espressif.com/en/products/esp8266/):
+Docker image of [esp-open-sdk](https://github.com/pfalcon/esp-open-sdk).
 
-* ESP8266 is a highly integrated chip designed for the needs of a new connected world. It offers a complete and self-contained WiFi networking solution, allowing it to either host the application or to offload all WiFi networking functions from another application processor.*
+Makes building am esp8266 project a breeze.
 
-Condensed specs:
+## Usage
 
-* WiFi (802.11 b/g/n, direct connect and AP mode, WEP, WPA/WPA2)
-* integrated TCP/IP protocol stack
-* uProcessor (Xtensa LX106) @ 80Mhz, 96kB data RAM, 64kB instruction RAM
-* SDIO 1.1/2.0, SPI, UART, GPIO
-* Vcc 3.3V, I = 0.5uA..215mA
-* application interface uses AT commands
+The container has everything to build and deploy firmware images for the ESP8266.
 
-# esp-open-sdk
+See some example projects [here](https://github.com/homebots/esp8266-starter-examples) or [here](https://github.com/esp8266/source-code-examples/blob/master/blinky/user/user_main.c)
 
-Compiled by [pfalcon](https://github.com/pfalcon) using
+## Project structure
 
-* Xtensa lx106 architecture tool-chain
-* ESP8266 IoT SDK from Espressif Systems
-
-provided via [GitHub](https://github.com/pfalcon/esp-open-sdk).
-
-It contains everything to build and deploy firmware images for the ESP8266.
-
-You should check the IoT SDK API documentation - see the readme.txt in folder '/home/espbuilder/esp-open-sdk/esp_iot_sdk_v1.0.0/document/English/'. The current version of the ESP8266 SDK API GUI can be found [here](http://bbs.espressif.com/download/file.php?id=1160).
-
-# usage
-
-## hardware
-
-The basic steps to upload code to the ESP8266 can be found [here](https://github.com/esp8266/esp8266-wiki/wiki/Uploading).
-Just connect the ESP8266 module using a 3.3V-RS232-USB-adapter (eg. FTDI232 adapter) and a 3.3V power supply (I started
-using the 3.3V rail from the FTDI232 - but this is not able to deliver enough power and the ESP8266 acts wired...):
+A blank project looks like this:
 
 ```
-ESP8266               PWR SPLY
-------+              +---------
-   Vcc|-+------------| 3.3V / 300mA
-      | |            |
-CHP_EN|-+         +--| GND
-      | |         |  |
-   RST|-+         |  +---------
-      |           |
- GPIO2|*          |
-      |     *     |
- GPIO0|-----+     |
-      |     |     |  RS232-USB
-      |      \SW0 |  +---------
-      |     |     |  |
-   GND|-----+-----+--|GND
-      |              |
-    RX|--------------|TX
-      |              |
-    TX|--------------|RX
-------+              +---------
-
-* GPIO0 and GPIO2 are connected to an internal pull up resistor
-
-pinout ESP-01, ver. 02, top view
-
---------------+
-     RX  O  O | Vcc
-  GPIO0  O  O | RST
-  GPIO2  O  O | CHP_EN
-    GND  O  O | TX
---------------+
+-- src/
+   index.c
+-- Makefile
 ```
 
-The default baud rate during boot is 115200 (8N1). After boot my modules switched down to 9600 (if nothing works, check 57600 and 115200). If your module reboots (eg. caused by the watchdog) the firmware spills out the reason of the reboot @ 115200. So it is
-a good idea to switch also on the application level to 115200 for being able to read the boot messages without the need to
-reconfigure the terminal for interacting with the user-application...
+### src/index.c
 
-Check if the setup is working by running the *AT* command:
+```c
+#include "esp-open-sdk.h"
 
-```
-host>sudo screen /dev/ttyUSB0 9600
-AT
+void setup() {
 
-OK
-AT+RST
+}
 
-OK
-<some strange stuff>
-[System Ready, Vendor:www.ai-thinker.com]
-```
+void loop() {
 
-**NOTE:** Newer modules (firmware >= 0.92) expect CR/LF ('\r\n') for command/line termination. First press
-the ENTER key (generates 0x0d - \r) and then CTRL+j (generates 0x0a - \n).
-
-To enable the *download boot mode* simply enable switch SW0 (pull GPIO0 down) during power on / after hardware reset.
-
-**NOTE:** Software reset (AT+RST) won't work for switching into *download boot mode*.
-
-**NOTE:** If 9600 speed doesn't work, try 115200:
-```
-host>sudo screen /dev/ttyUSB0 115200
-```
-
-## software
-
-### blinky example
-
-Create the image:
+}
 
 ```
-host> docker build -t hecke/esp-open-sdk-nonos:2.0.0 .
-```
 
-Start the container:
+### Makefile
 
-```
-host> docker run -ti --privileged hecke/esp-open-sdk-nonos:2.0.0
-```
+```makefile
+ESP_PORT       ?= /dev/ttyUSB0
+FLASH_SPEED   ?= 230400
 
-Build and flash the blinky example:
+build:
+	docker run --rm -it -v$$(pwd)/:/home/espbuilder/project --privileged espbuild
 
-```
-espbuilder@container> cd source-code-examples/blinky/
-espbuilder@container:~/source-code-examples/blinky> make
-CC user/user_main.c
-AR build/app_app.a
-LD build/app.out
-FW firmware/0x00000.bin
-FW firmware/0x40000.bin
-```
-
-It seems the *flash* target of the Makefile is broken - but you can simply call *esptool.py* directly:
+flash:
+	esptool.py --baud $(FLASH_SPEED) --port $(ESP_PORT) write_flash -fm qio -fs 512KB 0x00000 firmware/0x00000.bin 0x10000 firmware/0x10000.bin 0x7c000 firmware/0x7c000.bin
 
 ```
-espbuilder@container:~/source-code-examples/blinky> esptool.py --port /dev/ttyUSB0 write_flash 0x00000 firmware/0x00000.bin 0x10000 firmware/0x10000.bin
+
+### Build and flash
+
+You will need `esptool.py` to flash your binaries.
+Just run `git clone https://github.com/espressif/esptool.git` somewhere to get it.
+
+Then, from a terminal, just run the `make` commands:
+```
+$ make build
+
+CC project/src/index.c
+AR project/build/esp8266_app.a
+LD project/build/esp8266.out
+FW project/firmware/
 esptool.py v1.2
-Connecting...
-Auto-detected Flash size: 4m
-Running Cesanta flasher stub...
-Flash params set to 0x0000
-Writing 28672 @ 0x0... 28672 (100 %)
-Wrote 28672 bytes at 0x0 in 2.5 seconds (92.0 kbit/s)...
-Writing 196608 @ 0x10000... 196608 (100 %)
-Wrote 196608 bytes at 0x10000 in 17.0 seconds (92.3 kbit/s)...
-Leaving...
+FW project/firmware/
+esptool.py v1.2
 
-espbuilder@container:~/source-code-examples/blinky>
-```
-
-Reset/re-power the ESP8266 module and check if GPIO2 toggling with f=0.5 Hz.
-
-**NOTE:** The default port used to flash the firmware is /dev/ttyUSB0. To override the default,
-use the attribute 'ESPPORT', eg:
+$ make flash
 
 ```
-...
-espbuilder@container> make ESPPORT=/dev/ttyUSB42 flash
-...
-```
-
-### minimal project
-
-Create a project folder on the host machine:
-
-```
-host> mkdir -p /home/hecke/projects/esp8266-minimal
-```
-
-Start the container using the project folder as a shared directory:
-
-```
-host> docker run --rm -ti -v /home/hecke/projects/esp8266-minimal:/home/espbuilder/esp8266-minimal --privileged hecke/esp-open-sdk-nonos:2.0.0
-```
-
-Setup project environment (copy basic Makefile from blinky, create source folder):
-
-```
-espbuilder@container> cd esp8266-minimal
-espbuilder@container> cp source-code-examples/blinky/Makefile .
-espbuilder@container> mkdir user
-espbuilder@container> touch user/user_config.h
-```
-
-Just c&p the following lines into user/main.c. You can do this on your host machine or within the container.
-
-```
-#include "ets_sys.h"
-#include "osapi.h"
-#include "gpio.h"
-#include "os_type.h"
-
-#define user_procTaskPrio 0
-#define user_procTaskQueueLen 1
-os_event_t user_procTaskQueue[user_procTaskQueueLen];
-static void user_procTask(os_event_t *events);
-
-//NOP - just trigger myself
-static void ICACHE_FLASH_ATTR user_procTask(os_event_t *events)
-{
-	os_delay_us(10);
-
-  system_os_post(user_procTaskPrio, 0, 0 );
-}
-
-void ICACHE_FLASH_ATTR user_init()
-{
-	system_os_task(user_procTask, user_procTaskPrio,user_procTaskQueue, user_procTaskQueueLen);
-
-  system_os_post(user_procTaskPrio, 0, 0 );
-}
-```
-
-To build the minimal example just run make:
-
-```
-espbuilder@container> make
-CC user/main.c
-AR build/app_app.a
-LD build/app.out
-FW firmware/0x00000.bin
-FW firmware/0x40000.bin
-...
-```
-
-# links
-
-* [esp8266-wiki](https://github.com/esp8266/esp8266-wiki/wiki)
- * [AT command set](https://github.com/esp8266/esp8266-wiki/wiki/at_0.9.1)
- * [memory map](https://github.com/esp8266/esp8266-wiki/wiki/Memory-Map)
- * [boot process](https://github.com/esp8266/esp8266-wiki/wiki/Boot-Process)
-* [ESP8266 Community Forum](http://www.esp8266.com)
-* blog entries on [hack-a-day](http://hackaday.com/?s=esp8266)
- * awesome [color TV broadcast](http://hackaday.com/2016/03/01/color-tv-broadcasts-are-esp8266s-newest-trick/) using ESP8266 by cnlohr
-* [esp8266 GPIO performance](http://naberius.de/2015/05/14/esp8266-gpio-output-performance/)
-
-There are other ESP8266 tool-chains (like [this](https://github.com/cnlohr/ws2812esp8266) one) and a [Arduino compatible IDE](https://github.com/esp8266/arduino) that supports the ESP8266.
 
