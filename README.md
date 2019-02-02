@@ -52,9 +52,20 @@ flash:
 ### Build and flash
 
 You will need `esptool.py` to flash your binaries.
-Just run `git clone https://github.com/espressif/esptool.git` somewhere to get it.
+It can be installed with `pip` or directly from GitHub:
 
-Then, from a terminal, just run the `make` commands:
+```bash
+pip2 install esptool
+
+# if that does not work:
+
+git clone https://github.com/espressif/esptool.git ~/esptool
+cd ~/esptool
+python setup.py install
+```
+
+Then, from a terminal, just run the `make` commands from your project's folder:
+
 ```
 $ make build
 
