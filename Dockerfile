@@ -40,7 +40,3 @@ RUN (git clone --recursive https://github.com/pfalcon/esp-open-sdk.git && cd esp
 ENV PATH /home/espbuilder/esp-open-sdk/xtensa-lx106-elf/bin:/home/espbuilder/esp-open-sdk/esptool/:$PATH
 ENV XTENSA_TOOLS_ROOT /home/espbuilder/esp-open-sdk/xtensa-lx106-elf/bin
 ENV SDK_BASE /home/espbuilder/esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df
-COPY Makefile /home/espbuilder/
-ADD extras /home/espbuilder/extras
-
-CMD make clean && make && cp esp-open-sdk/sdk/bin/esp_init_data_default.bin project/firmware/0x7c000.bin

@@ -1,4 +1,4 @@
-# esbuild - esp8266 compiler on Docker
+# darlanalves/espbuild - esp8266 compiler on Docker
 
 Docker image of [esp-open-sdk](https://github.com/pfalcon/esp-open-sdk).
 
@@ -42,7 +42,7 @@ ESP_PORT       ?= /dev/ttyUSB0
 FLASH_SPEED   ?= 230400
 
 build:
-	docker run --rm -it -v$$(pwd)/:/home/espbuilder/project --privileged espbuild
+	docker run --rm -it -v$$(pwd)/:/home/espbuilder/project darlanalves/espbuild
 
 flash:
 	esptool.py --baud $(FLASH_SPEED) --port $(ESP_PORT) write_flash -fm qio -fs 512KB 0x00000 firmware/0x00000.bin 0x10000 firmware/0x10000.bin 0x7c000 firmware/0x7c000.bin
@@ -72,8 +72,6 @@ $ make build
 CC project/src/index.c
 AR project/build/esp8266_app.a
 LD project/build/esp8266.out
-FW project/firmware/
-esptool.py v1.2
 FW project/firmware/
 esptool.py v1.2
 
