@@ -43,6 +43,10 @@ ENV SDK_BASE /home/espbuilder/esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df
 WORKDIR /home/espbuilder
 RUN (cd /home/espbuilder && mkdir project) && git clone --recursive https://github.com/homebots/esp-open-sdk.git
 
+<<<<<<< HEAD
+=======
+RUN (cd /home/espbuilder && mkdir project) && git clone --recursive https://github.com/homebots/esp-open-sdk.git
+>>>>>>> chore: split clone and compile steps
 RUN cd esp-open-sdk && make STANDALONE=n
 
 COPY Makefile /home/espbuilder/
