@@ -1,6 +1,6 @@
-FROM debian:8.8
+FROM debian:stable
 
-RUN "echo" "deb http://http.us.debian.org/debian wheezy non-free" >> /etc/apt/sources.list
+RUN "echo" "deb http://http.us.debian.org/debian stretch non-free" >> /etc/apt/sources.list
 
 RUN apt-get update && apt-get install -y \
 	autoconf \
