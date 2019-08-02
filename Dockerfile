@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y \
 	unrar \
 	unzip \
 	wget \
+	patch \
 	help2man\
 	--no-install-recommends \
 	&& rm -rf /var/lib/apt/lists/*
@@ -39,8 +40,10 @@ ENV XTENSA_TOOLS_ROOT /home/espbuilder/esp-open-sdk/xtensa-lx106-elf/bin
 ENV SDK_BASE /home/espbuilder/esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df
 
 WORKDIR /home/espbuilder
-
 RUN (cd /home/espbuilder && mkdir project) && \
-  (git clone --recursive https://github.com/homebots/esp-open-sdk.git && cd esp-open-sdk && make STANDALONE=n)
+  git config --global http.sslverify false && \
+  git clone --recursive https://github.com/homebots/esp-open-sdk.git
+
+RUN cd esp-open-sdk && make STANDALONE=n
 
 COPY Makefile /home/espbuilder/
