@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y \
 	patch \
 	help2man\
 	--no-install-recommends \
+	&& apt-get install -y ca-certificates \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN useradd -ms /bin/bash espbuilder && usermod -a -G dialout espbuilder
@@ -40,9 +41,7 @@ ENV XTENSA_TOOLS_ROOT /home/espbuilder/esp-open-sdk/xtensa-lx106-elf/bin
 ENV SDK_BASE /home/espbuilder/esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df
 
 WORKDIR /home/espbuilder
-RUN (cd /home/espbuilder && mkdir project) && \
-  git config --global http.sslverify false && \
-  git clone --recursive https://github.com/homebots/esp-open-sdk.git
+RUN (cd /home/espbuilder && mkdir project) && git clone --recursive https://github.com/homebots/esp-open-sdk.git
 
 RUN cd esp-open-sdk && make STANDALONE=n
 
