@@ -27,7 +27,9 @@ RUN apt-get update && apt-get install -y \
 	unrar \
 	unzip \
 	wget \
-	help2man
+	help2man\
+	--no-install-recommends \
+	&& rm -rf /var/lib/apt/lists/*
 
 RUN useradd -ms /bin/bash espbuilder && usermod -a -G dialout espbuilder
 
