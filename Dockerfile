@@ -1,4 +1,4 @@
-FROM debian:stable
+FROM arm32v7/debian:stable
 
 RUN "echo" "deb http://http.us.debian.org/debian stretch non-free" >> /etc/apt/sources.list
 

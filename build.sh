@@ -1,1 +1,1 @@
-docker build -t darlanalves/espbuild:latest .
+docker build -t darlanalves/espbuild:arm .
