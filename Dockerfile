@@ -1,37 +1,20 @@
-FROM debian:stable
+FROM buildpack-deps:jessie
 
 RUN "echo" "deb http://http.us.debian.org/debian stretch non-free" >> /etc/apt/sources.list
 
-RUN apt-get update && apt-get install -y \
-	autoconf \
-	automake \
-	bison \
-	bzip2 \
-	flex \
-	g++ \
-	gawk \
-	gcc \
-	git \
-	gperf \
-	libexpat-dev \
-	libtool \
-	libtool-bin \
-	make \
-	ncurses-dev \
-	nano \
-	python \
-	python-dev \
-	python-serial \
-	sed \
-	texinfo \
-	unrar \
-	unzip \
-	wget \
-	patch \
-	help2man\
-	--no-install-recommends \
-	&& apt-get install -y ca-certificates \
-	&& rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+  apt-get -y -q --no-install-recommends install \
+  bison \
+  flex \
+  gawk \
+  gperf \
+  libtool-bin \
+  python-serial \
+  texinfo \
+  unrar-free \
+  unzip \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -ms /bin/bash espbuilder && usermod -a -G dialout espbuilder
 
@@ -42,11 +25,6 @@ ENV SDK_BASE /home/espbuilder/esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df
 
 WORKDIR /home/espbuilder
 RUN (cd /home/espbuilder && mkdir project) && git clone --recursive https://github.com/homebots/esp-open-sdk.git
-
-<<<<<<< HEAD
-=======
-RUN (cd /home/espbuilder && mkdir project) && git clone --recursive https://github.com/homebots/esp-open-sdk.git
->>>>>>> chore: split clone and compile steps
 RUN cd esp-open-sdk && make STANDALONE=n
 
 COPY Makefile /home/espbuilder/
