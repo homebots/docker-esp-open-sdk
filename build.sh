@@ -1,1 +1,1 @@
-docker build -t darlanalves/espbuild:latest .
+docker build -t darlanalves/espbuild:sdk-v3 .

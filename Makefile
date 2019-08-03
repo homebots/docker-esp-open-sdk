@@ -34,8 +34,9 @@ LD_SCRIPT	= eagle.app.v6.ld
 
 # various paths from the SDK used in this project
 SDK_LIBDIR	= lib
-SDK_LDDIR	= ld
+SDK_LDDIR		= ld
 SDK_INCDIR	= include include/json
+SDK_BASE 		= /home/espbuilder/esp-open-sdk/sdk
 
 # we create two different files for uploading into the flash
 # these are the names and options to generate them
