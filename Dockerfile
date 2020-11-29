@@ -41,7 +41,11 @@ ENV PATH /home/espbuilder/esp-open-sdk/xtensa-lx106-elf/bin:/home/espbuilder/esp
 ENV XTENSA_TOOLS_ROOT /home/espbuilder/esp-open-sdk/xtensa-lx106-elf/bin
 ENV SDK_BASE /home/espbuilder/esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df
 
-RUN (cd /home/espbuilder && mkdir project) && git clone --recursive https://github.com/homebots/esp-open-sdk.git
+RUN (cd /home/espbuilder && mkdir project) && git clone --recursive -b homebots https://github.com/homebots/esp-open-sdk.git
 RUN cd esp-open-sdk && make STANDALONE=n
+
+ENV SDK_BASE /home/espbuilder/esp-open-sdk/ESP8266_NONOS_SDK-2.1.1
+RUN cp esp-open-sdk/sdk/lib/libgcc.a esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/
+ADD extras/*.h /home/espbuilder/esp-open-sdk/ESP8266_NONOS_SDK-2.1.1/include/
 
 COPY Makefile /home/espbuilder/
