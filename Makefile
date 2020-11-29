@@ -17,6 +17,7 @@ BUILD_BASE		= project/build
 ESPTOOL			= esptool.py
 FW_BASE			= project/firmware
 TARGET			= esp8266
+SDK_BASE 		= /home/espbuilder/esp-open-sdk/sdk/
 
 # which modules (subdirectories) of the project to include in compiling
 MODULES         = project/src project/include
@@ -41,7 +42,7 @@ LD_SCRIPT	= eagle.app.v6.ld
 # various paths from the SDK used in this project
 SDK_LIBDIR	= lib
 SDK_LDDIR	= ld
-SDK_INCDIR	= include include/json driver_lib/include/driver
+SDK_INCDIR	= include include/json include/sdk driver_lib/include/driver
 
 # we create two different files for uploading into the flash
 # these are the names and options to generate them
@@ -93,9 +94,12 @@ $1/%.o: %.cpp
 	$(Q) $(CXX) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(CXXFLAGS) -c $$< -o $$@
 endef
 
-.PHONY: all checkdirs clean disassemble
+.PHONY: all clean disassemble symboldump copy-init
 
-all: checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
+all: clean checkdirs copy-init $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
+
+copy-init:
+	$(Q) cp esp-open-sdk/sdk/bin/esp_init_data_default.bin project/firmware/0x7c000.bin
 
 $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"
@@ -122,5 +126,8 @@ clean:
 
 disassemble:
 	xtensa-lx106-elf-objdump -D -S $(TARGET_OUT) > $(addprefix $(BUILD_BASE)/,$(TARGET).asm)
+
+symboldump:
+	xtensa-lx106-elf-nm -g $(TARGET_OUT) > $(addprefix $(BUILD_BASE)/,$(TARGET).sym)
 
 $(foreach bdir,$(BUILD_DIR),$(eval $(call compile-objects,$(bdir))))
