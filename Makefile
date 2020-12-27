@@ -21,20 +21,19 @@ SDK_BASE 		= /home/espbuilder/esp-open-sdk/sdk/
 
 # which modules (subdirectories) of the project to include in compiling
 MODULES         = project/src project/include
-
-ifndef EXTRA_INCDIR
 EXTRA_INCDIR    = project/include
-endif
 
 # libraries used in this project, mainly provided by the SDK
-LIBS            ?= c gcc hal pp phy net80211 lwip wpa main crypto # ssl
+ifndef LIBS
+override LIBS = c gcc hal pp phy net80211 lwip wpa main crypto ssl
+endif
 
 # compiler flags using during compilation of source files
 CFLAGS		= $(VFLAG) -Os -s -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -D__ets__ -DICACHE_FLASH
-CXXFLAGS	= $(VFLAG) $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11
+CXXFLAGS	= $(VFLAG) $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -D__ets__ -DICACHE_FLASH
 
 # linker flags used to generate the main object file
-LDFLAGS		?= -nostdlib -Wl,--no-check-sections -u $(USER_MAIN) -Wl,-static
+LDFLAGS		?= -nostdlib -Wl,--no-check-sections -u $(USER_MAIN) -Wl,-static -save-temps
 
 # linker script used for the above linkier step
 LD_SCRIPT	= eagle.app.v6.ld
@@ -88,7 +87,7 @@ vpath %.cpp $(SRC_DIR)
 define compile-objects
 $1/%.o: %.c
 	$(vecho) "CC $$<"
-	$(Q) $(CC) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(CFLAGS)  -c $$< -o $$@
+	$(Q) $(CC) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(CFLAGS) -c $$< -o $$@
 $1/%.o: %.cpp
 	$(vecho) "CXX $$<"
 	$(Q) $(CXX) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(CXXFLAGS) -c $$< -o $$@
