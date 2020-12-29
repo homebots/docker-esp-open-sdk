@@ -13,34 +13,32 @@ ifndef USER_MAIN
 override USER_MAIN = "call_user_start"
 endif
 
-BUILD_BASE		= project/build
-ESPTOOL			= esptool.py
+# libraries used in this project, mainly provided by the SDK
+LIBS				?= c gcc hal pp phy net80211 lwip wpa main crypto ssl
+
+BUILD_BASE	= project/build
 FW_BASE			= project/firmware
+ESPTOOL			= esptool.py
 TARGET			= esp8266
-SDK_BASE 		= /home/espbuilder/esp-open-sdk/sdk/
 
 # which modules (subdirectories) of the project to include in compiling
 MODULES         = project/src project/include
 EXTRA_INCDIR    = project/include
 
-# libraries used in this project, mainly provided by the SDK
-ifndef LIBS
-override LIBS = c gcc hal pp phy net80211 lwip wpa main crypto ssl
-endif
-
 # compiler flags using during compilation of source files
+# TODO test:  -free -fipa-pta
 CFLAGS		= $(VFLAG) -Os -s -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -D__ets__ -DICACHE_FLASH
-CXXFLAGS	= $(VFLAG) $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -D__ets__ -DICACHE_FLASH
+CXXFLAGS	= $(VFLAG) $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11
 
 # linker flags used to generate the main object file
 LDFLAGS		?= -nostdlib -Wl,--no-check-sections -u $(USER_MAIN) -Wl,-static -save-temps
 
-# linker script used for the above linkier step
+# linker script
 LD_SCRIPT	= eagle.app.v6.ld
 
 # various paths from the SDK used in this project
 SDK_LIBDIR	= lib
-SDK_LDDIR	= ld
+SDK_LDDIR		= ld
 SDK_INCDIR	= include include/json include/sdk driver_lib/include/driver
 
 # we create two different files for uploading into the flash
@@ -49,10 +47,10 @@ FW_FILE_1_ADDR	= 0x00000
 FW_FILE_2_ADDR	= 0x10000
 
 # select which tools to use as compiler, librarian and linker
-CC		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
-CXX		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-g++
-AR		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-ar
-LD		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
+CC		:= xtensa-lx106-elf-gcc
+CXX		:= xtensa-lx106-elf-g++
+AR		:= xtensa-lx106-elf-ar
+LD		:= xtensa-lx106-elf-gcc
 
 #### no user configurable options below here
 SRC_DIR		:= $(MODULES)
